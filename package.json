@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "cypress": "^13.7.3"
+    "cypress": "^13.8.0"
   },
   "name": "teste-api-cypress-tatianecavichiole",
   "version": "1.0.0",

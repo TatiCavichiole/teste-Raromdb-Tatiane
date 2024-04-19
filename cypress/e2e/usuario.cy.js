@@ -28,55 +28,60 @@ describe("teste de bad request", function () {
       .should("to.equal", 400);
   });
   });
+  it("Deve receber bad request ao tentar localizar usuario com Id inexistente", function () {
+    cy.request({
+    method: "GET",
+    url: "users/0",
+    
+    failOnStatusCode: false,
+  })
+    .its("status")
+    .should("to.equal", 400);
 });
+});
+
 
 describe("Testes de criação de usuario com dados validos", function () {
   let userId;
-  let tokenUsuario;
-  let usuarioLogin;
-  let usuario;
-  let userName;
-  let userEmail;
+  let accessToken;
+  // after(function() {
+  //   Cypress.Commands.add("apagarUsuario", function (id) {
+  //     cy.request("DELETE", "users/" + userid);
+  //   }); 
+  //   });
   it("Criar um novo usuário com credenciais válidas", function () {
     cy.criarUsuario().then(function (usuarioCriado) {
-      expect(usuarioCriado.login.status).to.equal(201);
-      expect(usuarioCriado.login.body).to.have.property("name");
-      expect(usuarioCriado.login.body).to.have.property("email");
-      usuario = usuarioCriado.usuario;
-      userId = usuarioCriado.usuario.id;
-      userName = usuarioCriado.name;
-      userEmail = usuarioCriado.email;
-      usuarioLogin = {
-        email: usuarioCriado.usuario.email,
-        password: usuarioCriado.usuario.password,
-      };
+      expect(usuarioCriado.status).to.equal(201);
+      expect(usuarioCriado.body).to.have.property("name");
+      expect(usuarioCriado.body).to.have.property("email");
+    
+      userId = usuarioCriado.body.id;
+     
+      cy.log(userId)
     });
+   
   });
 
   it("Logar usuario criado", function () {
-    cy.request("POST", "auth/login", usuarioLogin).then(function (
-      loginUsuario
-    ) {
-      expect(loginUsuario.status).to.equal(200);
-      expect(loginUsuario.body).to.have.property("accessToken");
-      tokenUsuario = loginUsuario.body.accessToken;
+    cy.logarUsuario().then(function (usuarioLogado) {
+      expect(usuarioLogado.status).to.equal(200);
+      expect(usuarioLogado.body).to.have.property("accessToken");
+      accessToken = usuarioLogado.body.accessToken
     });
   });
 
   it("Promover usario a Administrador", function () {
-    cy.request({
-      method: "PATCH",
-      url: "users/admin",
-      headers: { Authorization: "Bearer " + tokenUsuario },
-    }).then(function (promoverUsuarioAdmin) {
+    cy.tornarAdmin().then(function (promoverUsuarioAdmin) {
       expect(promoverUsuarioAdmin.status).to.equal(204);
+     
     });
   });
+
   it("Localizar usuario por id", function () {
     cy.request({
       method: "GET",
       url: "users/" + userId,
-      headers: { Authorization: "Bearer " + tokenUsuario },
+      headers: { Authorization: "Bearer " + accessToken },
     }).then(function (localizarUsuarioId) {
       expect(localizarUsuarioId.status).to.equal(200);
       expect(localizarUsuarioId.body).to.have.property("active");

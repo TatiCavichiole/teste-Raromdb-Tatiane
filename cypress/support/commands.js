@@ -31,43 +31,37 @@ import { faker } from "@faker-js/faker";
 //   };
 //   return cy.request("POST", "users", usuario).then(function (usuarioCriado) {});
 // });
+
+let accessToken;
+let usuarioLogin;
+let tokenUsuario;
 Cypress.Commands.add("criarUsuario", function () {
-  let userId;
-  let usuarioCriado;
-  let usuarioLogin;
-  const usuario = {
+    const usuario = {
     email: faker.internet.email(),
     password: "1a23b45c",
     name: faker.internet.userName(),
   };
-
-  return cy.request("POST", "users", usuario).then(function (usuarioCriado) {
-    usuario.id = usuarioCriado.body.id;
+  cy.request("POST", "users", usuario).then(function (usuarioCriado) {
     usuarioLogin = {
-      email: usuarioCriado.email,
-      password: usuarioCriado.password,
-    };
-    return { usuario: usuario, login: usuarioCriado };
-  });
+      email: usuarioCriado.body.email,
+      password: usuario.password,
+      };
+   
+    });
 });
 
 Cypress.Commands.add("logarUsuario", function () {
-  let tokenUsuario;
-  cy.request("POST", "auth/login", usuarioLogin).then(function (loginUsuario) {
-    expect(loginUsuario.status).to.equal(200);
+    cy.request("POST", "auth/login", usuarioLogin).then(function (usuarioLogado) {
+    accessToken = usuarioLogado.body.accessToken
   });
 });
 Cypress.Commands.add("tornarAdmin", function () {
-  return cy
-    .request({
-      method: "PATCH",
+  cy.request({method: "PATCH",
       url: "users/admin",
-      headers: { Authorization: "Bearer " + tokenUsuario },
+      headers: { Authorization: "Bearer " + accessToken },
+      
     })
-    .then(function (promoverUsuarioAdmin) {
-      tokenUsuario = promoverUsuarioAdmin.body.accessToken;
-      return { tokenUsuario };
-    });
+    
 });
 
 Cypress.Commands.add("apagarUsuario", function (id) {
