@@ -34,9 +34,10 @@ import { faker } from "@faker-js/faker";
 
 let accessToken;
 let usuarioLogin;
-let tokenUsuario;
+let userId;
+let filmeCriadoId;
 Cypress.Commands.add("criarUsuario", function () {
-    const usuario = {
+  const usuario = {
     email: faker.internet.email(),
     password: "1a23b45c",
     name: faker.internet.userName(),
@@ -45,29 +46,46 @@ Cypress.Commands.add("criarUsuario", function () {
     usuarioLogin = {
       email: usuarioCriado.body.email,
       password: usuario.password,
-      };
-   
-    });
+    };
+    userId = usuarioCriado.body.id;
+  });
 });
 
 Cypress.Commands.add("logarUsuario", function () {
-    cy.request("POST", "auth/login", usuarioLogin).then(function (usuarioLogado) {
-    accessToken = usuarioLogado.body.accessToken
+  cy.request("POST", "auth/login", usuarioLogin).then(function (usuarioLogado) {
+    accessToken = usuarioLogado.body.accessToken;
   });
 });
 Cypress.Commands.add("tornarAdmin", function () {
-  cy.request({method: "PATCH",
-      url: "users/admin",
-      headers: { Authorization: "Bearer " + accessToken },
-      
-    })
-    
+  cy.request({
+    method: "PATCH",
+    url: "users/admin",
+    headers: { Authorization: "Bearer " + accessToken },
+  });
+});
+Cypress.Commands.add("tornarCritico", function () {
+  cy.request({
+    method: "PATCH",
+    url: "users/apply",
+    headers: { Authorization: "Bearer " + accessToken },
+  });
 });
 
 Cypress.Commands.add("apagarUsuario", function (id) {
-  cy.request("DELETE", "users/" + id);
+  cy.request({
+    method: "DELETE",
+    url: "users/" + userId,
+    headers: { Authorization: "Bearer " + accessToken },
+  });
 });
-// cypress.commands.add("usuarioLogado", function(){
+
+Cypress.Commands.add("apagarFilme", function () {
+  cy.request({
+    method: "DELETE",
+    url: "movies/" + filmeCriadoId,
+    headers: { Authorization: "Bearer " + accessToken },
+  });
+});
 
 // })
 // -- This is a child command --

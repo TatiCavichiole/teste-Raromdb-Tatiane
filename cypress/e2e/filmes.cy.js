@@ -1,36 +1,45 @@
 describe("Filmes", function () {
-  let primeiroFilmeId;
+  let filmeCriadoId;
   let primeiroBodyId;
-  it("Cadastrar um novo filme como administrador", function () {
-    cy.criarUsuario().then(function (usuarioCriado) {
-      expect(usuarioCriado.login.status).to.equal(201);
-    });
-  it("Logar usuario criado", function () {
-    cy.request("POST", "auth/login", usuarioLogin).then(function (
-         loginUsuario
-        ) {
-        expect(loginUsuario.status).to.equal(200);
-        expect(loginUsuario.body).to.have.property("accessToken");
-          tokenUsuario = loginUsuario.body.accessToken;
-        });
-     
-    cy.tornarAdmin().then(function (promoverUsuarioAdmin) {
-        expect(promoverUsuarioAdmin.status).to.be.equal(204);
+  let tokenUsuario;
+  let filmeCriado;
+  let primeiroFilmeId;
+  before(function () {
+    cy.criarUsuario().then(function () {
+      cy.logarUsuario().then(function (response) {
+        tokenUsuario = response.body.accessToken;
+        cy.tornarAdmin().then(function () {});
       });
-    cy.request({
+    });
+  });
+  // after(function () {
+  //   cy.apagarFilme(filmeCriadoId);
+  // });
+  it("Cadastrar um novo filme como administrador", function () {
+    cy.fixture("cadastro-filme.json").then(function (dadosFilme) {
+      cy.request({
         method: "POST",
         url: "movies",
-        body: {
-          title: "Caneta azul",
-          genre: "musical",
-          description:
-            "Caneta azul, azul caneta, Caneta azul tá marcada com minhas letra",
-          durationInMinutes: 60,
-          releaseYear: 2022,
-        },
+        body: dadosFilme,
+        headers: { Authorization: "Bearer " + tokenUsuario },
       }).then(function (cadastrarFilme) {
         expect(cadastrarFilme.status).to.equal(201);
+        filmeCriado = dadosFilme.title;
+        cy.log(filmeCriado);
       });
+    });
+  });
+
+  it("Pesquisar filme criado pelo titulo", function () {
+    cy.request({
+      method: "GET",
+      url: "movies/search/",
+      qs: { title: filmeCriado },
+    }).then(function (pesquisarFilme) {
+      expect(pesquisarFilme.status).to.equal(200);
+
+      filmeCriadoId = pesquisarFilme.body[0].id;
+      cy.log(filmeCriadoId);
     });
   });
 
@@ -43,10 +52,9 @@ describe("Filmes", function () {
       expect(listarFilmes.status).to.be.equal(200);
       expect(listarFilmes.body).to.be.an("array");
       primeiroFilmeId = listarFilmes.body[0].id;
-      
     });
   });
-  
+
   it("Listar filmes por Id como usuario nao cadastrado", function () {
     cy.request({
       method: "GET",
@@ -56,6 +64,20 @@ describe("Filmes", function () {
       expect(listarFilmeId.body);
       primeiroBodyId = listarFilmeId.body;
       expect(listarFilmeId.body).to.deep.equal(primeiroBodyId);
+    });
+  });
+
+  it("Atualizar filme cadastrado", function () {
+    cy.fixture("atualizar-filme.json").then(function (dadosAtualizarFilme) {
+      cy.request({
+        method: "PUT",
+        url: "movies/" + filmeCriadoId,
+        body: dadosAtualizarFilme,
+        headers: { Authorization: "Bearer " + tokenUsuario },
+      }).then(function (atualizarFilme) {
+        expect(atualizarFilme.status).to.equal(204);
+        //expect(atualizarFilme.headers).to.have.property()
+      });
     });
   });
 });
