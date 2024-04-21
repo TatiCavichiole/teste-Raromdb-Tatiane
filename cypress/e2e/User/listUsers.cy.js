@@ -3,10 +3,11 @@ describe("Listar Usuarios", function () {
   let accessToken;
   before(function () {
     cy.criarUsuario().then(function (response) {
-      userId = response.id;
+      userId = response.body.id;
     });
     cy.logarUsuario().then(function (response) {
-      accessToken = response.accessToken;
+      accessToken = response.body.accessToken;
+      cy.log(accessToken);
     });
   });
   describe("teste de bad request", function () {
@@ -36,13 +37,17 @@ describe("Listar Usuarios", function () {
   });
 
   describe("Deve ser possivel listar e localizar usaruarios", function () {
-    cy.tornarAdmin().then(function () {});
-
     it("listar usuarios", function () {
+      cy.tornarAdmin().then(function () {});
       cy.request({
         method: "GET",
         url: "users",
         headers: { Authorization: "Bearer " + accessToken },
+      }).then(function (listarUsuario) {
+        expect(listarUsuario.status).to.equal(200);
+        expect(listarUsuario.body).to.be.an("array");
+        expect(listarUsuario.body.length).to.be.greaterThan(0);
+        cy.log(listarUsuario.body.length);
       });
     });
 

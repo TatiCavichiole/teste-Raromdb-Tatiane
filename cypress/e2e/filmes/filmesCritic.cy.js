@@ -1,9 +1,7 @@
-describe("Filmes", function () {
-  let filmeCriadoId;
-  let primeiroBodyId;
+describe("criar novo filme e atualizações de filmes como Administrador", function () {
   let tokenUsuario;
   let filmeCriado;
-  let primeiroFilmeId;
+  let filmeCriadoId;
   before(function () {
     cy.criarUsuario().then(function () {
       cy.logarUsuario().then(function (response) {
@@ -12,10 +10,8 @@ describe("Filmes", function () {
       });
     });
   });
-  // after(function () {
-  //   cy.apagarFilme(filmeCriadoId);
-  // });
-  it("Cadastrar um novo filme como administrador", function () {
+
+  it("Cadastrar um novo filme ", function () {
     cy.fixture("cadastro-filme.json").then(function (dadosFilme) {
       cy.request({
         method: "POST",
@@ -25,7 +21,6 @@ describe("Filmes", function () {
       }).then(function (cadastrarFilme) {
         expect(cadastrarFilme.status).to.equal(201);
         filmeCriado = dadosFilme.title;
-        cy.log(filmeCriado);
       });
     });
   });
@@ -42,31 +37,6 @@ describe("Filmes", function () {
       cy.log(filmeCriadoId);
     });
   });
-
-  it("Listar filmes como usuario nao cadastrado", function () {
-    cy.request({
-      method: "GET",
-      url: "movies",
-      sort: false,
-    }).then(function (listarFilmes) {
-      expect(listarFilmes.status).to.be.equal(200);
-      expect(listarFilmes.body).to.be.an("array");
-      primeiroFilmeId = listarFilmes.body[0].id;
-    });
-  });
-
-  it("Listar filmes por Id como usuario nao cadastrado", function () {
-    cy.request({
-      method: "GET",
-      url: "movies/" + primeiroFilmeId,
-    }).then(function (listarFilmeId) {
-      expect(listarFilmeId.status).to.equal(200);
-      expect(listarFilmeId.body);
-      primeiroBodyId = listarFilmeId.body;
-      expect(listarFilmeId.body).to.deep.equal(primeiroBodyId);
-    });
-  });
-
   it("Atualizar filme cadastrado", function () {
     cy.fixture("atualizar-filme.json").then(function (dadosAtualizarFilme) {
       cy.request({
@@ -76,8 +46,22 @@ describe("Filmes", function () {
         headers: { Authorization: "Bearer " + tokenUsuario },
       }).then(function (atualizarFilme) {
         expect(atualizarFilme.status).to.equal(204);
-        //expect(atualizarFilme.headers).to.have.property()
       });
+    });
+  });
+  it("fazer review de filme", function () {
+    cy.request({
+      method: "POST",
+      url: "users/review",
+      body: {
+        movieId: filmeCriadoId,
+        score: 5,
+        reviewText: "Musica Chiclete",
+      },
+      headers: { Authorization: "Bearer " + tokenUsuario },
+    }).then(function (reviewFilme) {
+      expect(reviewFilme.status).to.equal(201);
+      expect(reviewFilme.headers).to.have.property("date");
     });
   });
 });

@@ -79,6 +79,17 @@ Cypress.Commands.add("apagarUsuario", function (id) {
   });
 });
 
+Cypress.Commands.add("criarFilme", function () {
+  cy.fixture("cadastro-filme.json").then(function (dadosFilme) {
+    cy.request({
+      method: "POST",
+      url: "movies",
+      body: dadosFilme,
+      headers: { Authorization: "Bearer " + accessToken },
+    });
+  });
+});
+
 Cypress.Commands.add("apagarFilme", function () {
   cy.request({
     method: "DELETE",
