@@ -2,6 +2,8 @@ describe("testes para usuario Admin", function () {
   let tokenUsuario;
   let filmeCriado;
   let filmeCriadoId;
+  let primeiroFilmeId;
+  let primeiroBodyId;
   before(function () {
     cy.criarUsuario().then(function () {
       cy.logarUsuario().then(function (response) {
@@ -121,7 +123,9 @@ describe("testes para usuario Admin", function () {
         expect(pesquisarFilme.status).to.equal(200);
 
         filmeCriadoId = pesquisarFilme.body[0].id;
+        primeiroBodyId = pesquisarFilme.body[0];
         cy.log(filmeCriadoId);
+        cy.log(primeiroBodyId);
       });
     });
     it("Atualizar filme cadastrado", function () {
@@ -164,13 +168,11 @@ describe("testes para usuario Admin", function () {
     it("Listar filmes por Id ", function () {
       cy.request({
         method: "GET",
-        url: "movies/" + primeiroFilmeId,
+        url: "movies/" + filmeCriadoId,
       }).then(function (listarFilmeId) {
         expect(listarFilmeId.status).to.equal(200);
-        expect(listarFilmeId.body);
-        primeiroBodyId = listarFilmeId.body;
-        expect(listarFilmeId.body).to.deep.equal(primeiroBodyId);
-        cy.log(primeiroFilmeId);
+
+        expect(listarFilmeId.body.id).to.equal(filmeCriadoId);
       });
     });
   });
