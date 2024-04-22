@@ -151,5 +151,27 @@ describe("testes para usuario Admin", function () {
         expect(reviewFilme.headers).to.have.property("date");
       });
     });
+    it("listar review de filme", function () {
+      cy.request({
+        method: "GET",
+        url: "users/review/all",
+        headers: { Authorization: "Bearer " + tokenUsuario },
+      }).then(function (listarReviewFilme) {
+        expect(listarReviewFilme.status).to.equal(200);
+        expect(listarReviewFilme.body).to.be.an("array");
+      });
+    });
+    it("Listar filmes por Id ", function () {
+      cy.request({
+        method: "GET",
+        url: "movies/" + primeiroFilmeId,
+      }).then(function (listarFilmeId) {
+        expect(listarFilmeId.status).to.equal(200);
+        expect(listarFilmeId.body);
+        primeiroBodyId = listarFilmeId.body;
+        expect(listarFilmeId.body).to.deep.equal(primeiroBodyId);
+        cy.log(primeiroFilmeId);
+      });
+    });
   });
 });

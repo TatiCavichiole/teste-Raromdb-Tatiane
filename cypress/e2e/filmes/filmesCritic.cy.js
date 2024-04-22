@@ -127,7 +127,7 @@ describe("testes para usuario Critic", function () {
     });
   });
 
-  describe("fazer review de filmes e listar filmes", function () {
+  describe("permissoes usuario Critico", function () {
     it("Pesquisar filme criado pelo titulo", function () {
       cy.request({
         method: "GET",
@@ -153,6 +153,28 @@ describe("testes para usuario Critic", function () {
       }).then(function (reviewFilme) {
         expect(reviewFilme.status).to.equal(201);
         expect(reviewFilme.headers).to.have.property("date");
+      });
+    });
+    it("listar review de filme", function () {
+      cy.request({
+        method: "GET",
+        url: "users/review/all",
+        headers: { Authorization: "Bearer " + tokenUsuario },
+      }).then(function (listarReviewFilme) {
+        expect(listarReviewFilme.status).to.equal(200);
+        expect(listarReviewFilme.body).to.be.an("array");
+      });
+    });
+    it("Listar filmes por Id ", function () {
+      cy.request({
+        method: "GET",
+        url: "movies/" + filmeCriadoId,
+      }).then(function (listarFilmeId) {
+        expect(listarFilmeId.status).to.equal(200);
+        expect(listarFilmeId.body).to.have.property("durationInMinutes");
+        expect(listarFilmeId.body).to.have.property("releaseYear");
+        expect(listarFilmeId.body).to.have.property("criticScore");
+        expect(listarFilmeId.body).to.have.property("audienceScore");
       });
     });
   });
