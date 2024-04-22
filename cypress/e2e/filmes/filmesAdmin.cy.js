@@ -71,7 +71,7 @@ describe("testes para usuario Admin", function () {
         expect(reviewFilme.body.message).to.deep.equal("Movie not found");
       });
     });
-    it("deve receber Not Found ao fazer review de filme com preenchimento do Id incorreto ", function () {
+    it("deve receber Not Found ao fazer review de filme com preenchimento do review incorreto ", function () {
       cy.request({
         method: "POST",
         url: "users/review",
