@@ -1,22 +1,19 @@
-describe("testes para usuario Admin", function () {
+describe("testes para usuario Critic", function () {
   let tokenUsuario;
   let filmeCriado;
   let filmeCriadoId;
-  let primeiroFilmeId;
-  let primeiroBodyId;
   before(function () {
     cy.criarUsuario().then(function () {
       cy.logarUsuario().then(function (response) {
         tokenUsuario = response.body.accessToken;
-        cy.tornarAdmin().then(function () {});
+        cy.tornarCritico().then(function () {});
       });
     });
   });
-  // after(function () {
-  //   cy.apagarFilme().then(function () {
-  //     tokenUsuario = response.body.accessToken;
-  //   });
-  // });
+  after(function () {
+    cy.tornarAdmin().then(function () {});
+    cy.apagarFilme(filmeCriadoId);
+  });
 
   describe("testes bad request", function () {
     it("deve receber bad request ao fazer review de filme com score maior que 5 ", function () {
@@ -25,7 +22,7 @@ describe("testes para usuario Admin", function () {
         url: "users/review",
         body: {
           movieId: filmeCriadoId,
-          score: 6,
+          score: 8,
           reviewText: "Musica Chiclete",
         },
         headers: { Authorization: "Bearer " + tokenUsuario },
@@ -57,20 +54,22 @@ describe("testes para usuario Admin", function () {
         //"Score should be between 1 and 5"
       });
     });
-    it("deve receber Not Found ao fazer review de filme com preenchimento do Id incorreto ", function () {
+    it("deve receber Not Found ao fazer review de filme com preenchimento do Id tipo string ", function () {
       cy.request({
         method: "POST",
         url: "users/review",
         body: {
-          movieId: 0,
-          score: 3,
+          movieId: "oi",
+          score: 1,
           reviewText: "Musica Chiclete",
         },
         headers: { Authorization: "Bearer " + tokenUsuario },
         failOnStatusCode: false,
       }).then(function (reviewFilme) {
-        expect(reviewFilme.status).to.be.equal(404);
-        expect(reviewFilme.body.message).to.deep.equal("Movie not found");
+        expect(reviewFilme.status).to.be.equal(400);
+        expect(reviewFilme.body.message).to.deep.equal([
+          "movieId must be an integer number",
+        ]);
       });
     });
     it("deve receber Not Found ao fazer review de filme com preenchimento do review incorreto ", function () {
@@ -79,8 +78,8 @@ describe("testes para usuario Admin", function () {
         url: "users/review",
         body: {
           movieId: filmeCriadoId,
-          score: 3,
-          reviewText: 123,
+          score: 2,
+          reviewText: 0,
         },
         headers: { Authorization: "Bearer " + tokenUsuario },
         failOnStatusCode: false,
@@ -97,23 +96,37 @@ describe("testes para usuario Admin", function () {
         );
       });
     });
-  });
-
-  describe("criar novo filme e atualizações de filmes como Administrador", function () {
-    it("Cadastrar um novo filme ", function () {
+    it("deve receber Not Found ao tentar criar um novo filme ", function () {
       cy.fixture("cadastro-filme.json").then(function (dadosFilme) {
         cy.request({
           method: "POST",
           url: "movies",
           body: dadosFilme,
           headers: { Authorization: "Bearer " + tokenUsuario },
-        }).then(function (cadastrarFilme) {
-          expect(cadastrarFilme.status).to.equal(201);
-          filmeCriado = dadosFilme.title;
+          failOnStatusCode: false,
+        }).then(function (criarFilme) {
+          expect(criarFilme.status).to.be.equal(403);
+          expect(criarFilme.body.message).to.deep.equal("Forbidden");
         });
       });
     });
+    it("deve receber not Found ao fazer update de filme", function () {
+      cy.fixture("atualizar-filme.json").then(function (atualizarFilme) {
+        cy.request({
+          method: "PUT",
+          url: "movies/" + filmeCriadoId,
+          body: atualizarFilme,
+          headers: { Authorization: "Bearer " + tokenUsuario },
+          failOnStatusCode: false,
+        }).then(function (criarFilme) {
+          expect(criarFilme.status).to.be.equal(403);
+          expect(criarFilme.body.message).to.deep.equal("Forbidden");
+        });
+      });
+    });
+  });
 
+  describe("permissoes usuario Critico", function () {
     it("Pesquisar filme criado pelo titulo", function () {
       cy.request({
         method: "GET",
@@ -123,21 +136,7 @@ describe("testes para usuario Admin", function () {
         expect(pesquisarFilme.status).to.equal(200);
 
         filmeCriadoId = pesquisarFilme.body[0].id;
-        primeiroBodyId = pesquisarFilme.body[0];
         cy.log(filmeCriadoId);
-        cy.log(primeiroBodyId);
-      });
-    });
-    it("Atualizar filme cadastrado", function () {
-      cy.fixture("atualizar-filme.json").then(function (dadosAtualizarFilme) {
-        cy.request({
-          method: "PUT",
-          url: "movies/" + filmeCriadoId,
-          body: dadosAtualizarFilme,
-          headers: { Authorization: "Bearer " + tokenUsuario },
-        }).then(function (atualizarFilme) {
-          expect(atualizarFilme.status).to.equal(204);
-        });
       });
     });
     it("fazer review de filme", function () {
@@ -171,8 +170,10 @@ describe("testes para usuario Admin", function () {
         url: "movies/" + filmeCriadoId,
       }).then(function (listarFilmeId) {
         expect(listarFilmeId.status).to.equal(200);
-
-        expect(listarFilmeId.body.id).to.equal(filmeCriadoId);
+        expect(listarFilmeId.body).to.have.property("durationInMinutes");
+        expect(listarFilmeId.body).to.have.property("releaseYear");
+        expect(listarFilmeId.body).to.have.property("criticScore");
+        expect(listarFilmeId.body).to.have.property("audienceScore");
       });
     });
   });

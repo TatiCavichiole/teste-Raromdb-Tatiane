@@ -19,7 +19,7 @@
 //   fakesenha: faker.internet.senha(6)
 //   }
 //  })
-import { faker } from "@faker-js/faker";
+
 // import cypress from "cypress";
 // Cypress.Commands.add("criarUsuario", function () {
 //   let userId;
@@ -31,7 +31,7 @@ import { faker } from "@faker-js/faker";
 //   };
 //   return cy.request("POST", "users", usuario).then(function (usuarioCriado) {});
 // });
-
+import { faker } from "@faker-js/faker";
 let accessToken;
 let usuarioLogin;
 let userId;
@@ -90,7 +90,7 @@ Cypress.Commands.add("criarFilme", function () {
   });
 });
 
-Cypress.Commands.add("apagarFilme", function () {
+Cypress.Commands.add("apagarFilme", function (filmeCriadoId) {
   cy.request({
     method: "DELETE",
     url: "movies/" + filmeCriadoId,

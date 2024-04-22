@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 describe("Listar Usuarios", function () {
   let userId;
   let accessToken;

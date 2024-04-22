@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 describe("Testes de login de usuario", function () {
   let accessToken;
 
@@ -47,7 +48,7 @@ describe("Testes de login de usuario", function () {
       }).then(function (response) {
         expect(response.status).to.equal(401);
         expect(response.body.error).to.equal("Unauthorized");
-        expect(response.body.message[0]).to.be.equal(
+        expect(response.body.message).to.be.equal(
           "Invalid username or password."
         );
       });

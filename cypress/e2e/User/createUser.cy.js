@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker";
-
 describe("Testes de usuario", function () {
   let userEmail;
   describe("teste de bad request", function () {
@@ -13,6 +12,7 @@ describe("Testes de usuario", function () {
         failOnStatusCode: false,
       }).then((response) => {
         expect(response.status).to.equal(400);
+        expect(response.body.message[1]).to.be.equal("email must be an email");
       });
     });
 
@@ -40,9 +40,9 @@ describe("Testes de usuario", function () {
       }).then(function (response) {
         expect(response.status).to.equal(400);
         expect(response.body.error).to.equal("Bad Request");
-        // expect(response.body.message).to.be.equal(
-        //   "password must be longer than or equal to 6 characters"
-        // );
+        expect(response.body.message[3]).to.be.equal(
+          "password must be longer than or equal to 6 characters"
+        );
       });
     });
 
@@ -58,9 +58,9 @@ describe("Testes de usuario", function () {
       }).then(function (response) {
         expect(response.status).to.equal(400);
         expect(response.body.error).to.equal("Bad Request");
-        // expect(response.body.message).to.be.equal(
-        //   "password must be longer than or equal to 6 characters"
-        // );
+        expect(response.body.message[3]).to.be.equal(
+          "password must be shorter than or equal to 12 characters"
+        );
       });
     });
   });
@@ -98,9 +98,9 @@ describe("Testes de usuario", function () {
         expect(usuarioCriado.status).to.equal(201);
         expect(usuarioCriado.body).to.have.property("name");
         expect(usuarioCriado.body).to.have.property("email");
-        userEmail = usuarioCriado.email;
+        userEmail = usuarioCriado.body.email;
         userId = usuarioCriado.body.id;
-        cy.log(userId);
+        cy.log(userEmail);
       });
     });
   });
