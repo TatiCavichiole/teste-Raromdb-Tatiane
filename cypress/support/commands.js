@@ -71,7 +71,7 @@ Cypress.Commands.add("tornarCritico", function () {
   });
 });
 
-Cypress.Commands.add("apagarUsuario", function (id) {
+Cypress.Commands.add("apagarUsuario", function () {
   cy.request({
     method: "DELETE",
     url: "users/" + userId,
